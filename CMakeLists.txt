@@ -25,7 +25,7 @@ link_directories(
 	3rd/jsoncpp/src/lib_json/
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wno-pedantic -Wno-unused-parameter")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g3 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 
@@ -34,7 +34,7 @@ add_library(i3ipc++_static STATIC ${SRC})
 
 set(I3IPCpp_LIBRARY_DIRS ${CMAKE_CURRENT_BINARY_DIR})
 set(I3IPCpp_INCLUDE_DIRS
-	3rd/auss/include
+	${CMAKE_CURRENT_SOURCE_DIR}/3rd/auss/include
 	${CMAKE_CURRENT_SOURCE_DIR}/include/
 )
 set(I3IPCpp_LIBRARIES i3ipc++_static ${SIGCPP_LIBRARIES} jsoncpp_lib_static)
