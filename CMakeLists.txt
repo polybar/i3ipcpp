@@ -21,7 +21,7 @@ include_directories(
 )
 
 link_directories(
-	${SIBCPP_LIBRARY_DIRS}
+	${SIGCPP_LIBRARY_DIRS}
 	3rd/jsoncpp/src/lib_json/
 )
 
