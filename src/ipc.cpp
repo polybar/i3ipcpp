@@ -7,8 +7,8 @@
 #include <json/json.h>
 
 #include "log.hpp"
-#include "ipc-util.hpp"
-#include "ipc.hpp"
+#include "i3ipc++/ipc-util.hpp"
+#include "i3ipc++/ipc.hpp"
 
 namespace i3ipc {
 
