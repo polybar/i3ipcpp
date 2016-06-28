@@ -1,7 +1,7 @@
 # Project setup {{{
 
-cmake_minimum_required(VERSION 3.0)
-project(i3ipc++)
+cmake_minimum_required(VERSION 3.1)
+project(i3ipc++ CXX)
 
 option(WITH_TESTS "Build unit tests executables" OFF)
 option(BUILD_EXAMPLES "Build example executables" OFF)
@@ -25,6 +25,9 @@ add_library(${PROJECT_NAME} STATIC
   src/ipc.cpp
   src/ipc-util.cpp)
 
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
+
 target_link_libraries(${PROJECT_NAME} ${SIGCPP_LIBRARIES} jsoncpp_lib_static)
 
 target_include_directories(${PROJECT_NAME}
@@ -36,7 +39,6 @@ target_include_directories(${PROJECT_NAME}
   ${SIGCPP_INCLUDE_DIRS})
 
 target_compile_options(${PROJECT_NAME} PRIVATE
-  $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>
   -Wall -Wextra -Wno-unused-parameter
   $<$<CONFIG:Debug>:-g3 -DDEBUG>
   $<$<CONFIG:Release>:-O2>)
