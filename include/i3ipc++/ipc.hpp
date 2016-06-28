@@ -247,6 +247,12 @@ public:
 	 */
 	void  handle_event();
 
+	/**
+	 * Get file descriptor associated with the socket
+	 */
+	int get_main_socket_fd();
+	int get_event_socket_fd();
+
 	sigc::signal<void, const workspace_event_t&>  signal_workspace_event; ///< Workspace event signal
 	sigc::signal<void>  signal_output_event; ///< Output event signal
 	sigc::signal<void>  signal_mode_event; ///< Output mode event signal

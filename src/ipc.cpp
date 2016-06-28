@@ -283,6 +283,13 @@ void  connection::handle_event() {
 	this->signal_event.emit(static_cast<EventType>(1 << (buf->header->type & 0x7f)), std::static_pointer_cast<const buf_t>(buf));
 }
 
+int connection::get_main_socket_fd() {
+	return this->m_main_socket;
+}
+
+int connection::get_event_socket_fd() {
+	return this->m_event_socket;
+}
 
 bool  connection::subscribe(const int32_t  events) {
 #define i3IPC_TYPE_STR "SUBSCRIBE"
