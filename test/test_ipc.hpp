@@ -1,10 +1,9 @@
 #include <iostream>
 
-#include <auss.hpp>
-
-#include "ipc-util.hpp"
-
 #include <cxxtest/TestSuite.h>
+
+#include "auss.hpp"
+#include "i3ipc++/ipc-util.hpp"
 
 class testsuite_ipc_util : public CxxTest::TestSuite {
 public:

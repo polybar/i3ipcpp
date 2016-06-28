@@ -9,33 +9,31 @@ option(BUILD_EXAMPLES "Build example executables" OFF)
 # }}}
 # Process dependencies {{{
 
-set(BUILD_STATIC_LIBS ON)
-set(BUILD_SHARED_LIBS OFF)
-add_subdirectory("${PROJECT_SOURCE_DIR}/3rd/jsoncpp")
-unset(BUILD_STATIC_LIBS)
-unset(BUILD_SHARED_LIBS)
-
 find_package(PkgConfig)
 pkg_check_modules(SIGCPP REQUIRED sigc++-2.0)
+pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
 # }}}
 # Create project lib {{{
 
 add_library(${PROJECT_NAME} STATIC
+  include/auss.hpp
+  include/log.hpp
+  include/i3ipc++/ipc.hpp
+  include/i3ipc++/ipc-util.hpp
   src/ipc.cpp
   src/ipc-util.cpp)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 
-target_link_libraries(${PROJECT_NAME} ${SIGCPP_LIBRARIES} jsoncpp_lib_static)
+target_link_libraries(${PROJECT_NAME}
+  ${JSONCPP_LIBRARIES}
+  ${SIGCPP_LIBRARIES})
 
-target_include_directories(${PROJECT_NAME}
-  PRIVATE
-  ${PROJECT_SOURCE_DIR}/3rd/jsoncpp/include
-  ${PROJECT_SOURCE_DIR}/3rd/auss/include
-  PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
   ${PROJECT_SOURCE_DIR}/include
+  ${JSONCPP_INCLUDE_DIRS}
   ${SIGCPP_INCLUDE_DIRS})
 
 target_compile_options(${PROJECT_NAME} PRIVATE

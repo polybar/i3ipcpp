@@ -220,7 +220,7 @@ public:
 
 	/**
 	 * Subscribe on an events of i3
-	 * 
+	 *
 	 * If connection isn't handling events at the moment, event numer will be added to subscription list.
 	 * Else will also send subscripe request to i3
 	 *
@@ -229,7 +229,7 @@ public:
 	 * connection  conn;
 	 * conn.subscribe(i3ipc::ipc::ET_WORKSPACE | i3ipc::ipc::ET_WINDOW);
 	 * @endcode
-	 * 
+	 *
 	 * @param  events event type (EventType enum)
 	 * @return        Is successfully subscribed. If connection isn't handling events at the moment, then always true.
 	 */

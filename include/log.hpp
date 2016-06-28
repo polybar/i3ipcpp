@@ -2,7 +2,8 @@
 
 #include <ostream>
 #include <vector>
-#include <auss.hpp>
+
+#include "auss.hpp"
 
 /**
  * @addtogroup logging Logging

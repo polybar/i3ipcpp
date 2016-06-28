@@ -10,8 +10,7 @@ extern "C" {
 #include <cstring>
 #include <ios>
 
-#include <auss.hpp>
-
+#include "auss.hpp"
 #include "i3ipc++/ipc-util.hpp"
 
 namespace i3ipc {

@@ -3,9 +3,9 @@
 #include <stdexcept>
 #include <iostream>
 
-#include <auss.hpp>
 #include <json/json.h>
 
+#include "auss.hpp"
 #include "log.hpp"
 #include "i3ipc++/ipc-util.hpp"
 #include "i3ipc++/ipc.hpp"
