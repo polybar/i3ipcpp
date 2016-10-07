@@ -1,6 +1,6 @@
 # Project setup {{{
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(i3ipc++ CXX)
 
 option(WITH_TESTS "Build unit tests executables" OFF)
@@ -11,7 +11,7 @@ option(BUILD_EXAMPLES "Build example executables" OFF)
 
 find_package(PkgConfig)
 pkg_check_modules(SIGCPP REQUIRED sigc++-2.0)
-pkg_check_modules(JSONCPP REQUIRED jsoncpp)
+pkg_check_modules(JSONCPP REQUIRED jsoncpp>=1.7.0)
 
 # }}}
 # Create project lib {{{
@@ -36,10 +36,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${JSONCPP_INCLUDE_DIRS}
   ${SIGCPP_INCLUDE_DIRS})
 
-target_compile_options(${PROJECT_NAME} PRIVATE
-  -Wall -Wextra -Wno-unused-parameter
-  $<$<CONFIG:Debug>:-g3 -DDEBUG>
-  $<$<CONFIG:Release>:-O2>)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wno-unused-parameter)
+target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:-g3 -DDEBUG>)
+target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:-O3>)
 
 # }}}
 # Export lists to the parent scope if there are any {{{
@@ -47,6 +46,10 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
 if(HAS_PARENT)
   set(I3IPCPP_LIBRARIES ${PROJECT_NAME} PARENT_SCOPE)
+  set(I3IPCPP_INCLUDE_DIRS
+    ${PROJECT_SOURCE_DIR}/include
+    ${JSONCPP_INCLUDE_DIRS}
+    ${SIGCPP_INCLUDE_DIRS})
 endif()
 
 # }}}
