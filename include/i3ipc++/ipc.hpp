@@ -4,8 +4,9 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <list>
 
-#include <sigc++/sigc++.h>
+#include <fastdelegate/fastdelegate.hpp>
 
 extern "C" {
 #include <i3/ipc.h>
@@ -253,13 +254,15 @@ public:
 	int get_main_socket_fd();
 	int get_event_socket_fd();
 
-	sigc::signal<void, const workspace_event_t&>  signal_workspace_event; ///< Workspace event signal
-	sigc::signal<void>  signal_output_event; ///< Output event signal
-	sigc::signal<void>  signal_mode_event; ///< Output mode event signal
-	sigc::signal<void, const window_event_t&>  signal_window_event; ///< Window event signal
-	sigc::signal<void>  signal_barconfig_update_event; ///< Barconfig update event signal
-	sigc::signal<void, EventType, const std::shared_ptr<const buf_t>&>  signal_event; ///< i3 event signal @note Default handler routes event to signal according to type
+	delegate::Signal1<const workspace_event_t&> signal_workspace_event; ///< Workspace event signal
+	delegate::Signal0<> signal_output_event; ///< Output event signal
+	delegate::Signal0<> signal_mode_event; ///< Output mode event signal
+	delegate::Signal1<const window_event_t&>  signal_window_event; ///< Window event signal
+	delegate::Signal0<> signal_barconfig_update_event; ///< Barconfig update event signal
+	delegate::Signal2<EventType, const std::shared_ptr<const buf_t>&>  signal_event; ///< i3 event signal @note Default handler routes event to signal according to type
 private:
+	void signal_event_handler(EventType event_type, const std::shared_ptr<const buf_t>& buf);
+
 	const int32_t  m_main_socket;
 	int32_t  m_event_socket;
 	int32_t  m_subscriptions;

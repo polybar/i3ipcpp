@@ -65,7 +65,7 @@ inline void  log(const auss_t&  data, const bool  err) {
  */
 #define I3IPC_WARN(T) I3IPC_LOG(auss_t() << "W: " << T, true)
 
-#ifdef DEBUG
+#ifdef I3IPCPP_DEBUG
 
 /**
  * Put debug message to log

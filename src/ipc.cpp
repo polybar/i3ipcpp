@@ -180,89 +180,90 @@ std::string  get_socketpath() {
 
 
 connection::connection(const std::string&  socket_path) : m_main_socket(i3_connect(socket_path)), m_event_socket(-1), m_subscriptions(0), m_socket_path(socket_path) {
-#define i3IPC_TYPE_STR "i3's event"
-	signal_event.connect([this](EventType  event_type, const std::shared_ptr<const buf_t>&  buf) {
-		switch (event_type) {
-		case ET_WORKSPACE: {
-			workspace_event_t  ev;
-			Json::Value  root;
-			IPC_JSON_READ(root);
-			std::string  change = root["change"].asString();
-			if (change == "focus") {
-				ev.type = WorkspaceEventType::FOCUS;
-			} else if (change == "init") {
-				ev.type = WorkspaceEventType::INIT;
-			} else if (change == "empty") {
-				ev.type = WorkspaceEventType::EMPTY;
-			} else if (change == "urgent") {
-				ev.type = WorkspaceEventType::URGENT;
-			} else {
-				I3IPC_WARN("Unknown workspace event type " << change)
-				break;
-			}
-			I3IPC_DEBUG("WORKSPACE " << change)
-
-			Json::Value  current = root["current"];
-			Json::Value  old = root["current"];
-
-			if (!current.isNull()) {
-				ev.current = parse_workspace_from_json(current);
-			}
-			if (!old.isNull()) {
-				ev.old = parse_workspace_from_json(old);
-			}
-
-			signal_workspace_event.emit(ev);
-			break;
-		}
-		case ET_OUTPUT:
-			I3IPC_DEBUG("OUTPUT")
-			signal_output_event.emit();
-			break;
-		case ET_MODE:
-			I3IPC_DEBUG("MODE")
-			signal_mode_event.emit();
-			break;
-		case ET_WINDOW: {
-			window_event_t  ev;
-			Json::Value  root;
-			IPC_JSON_READ(root);
-			std::string  change = root["change"].asString();
-			if (change == "new") {
-				ev.type = WindowEventType::NEW;
-			} else if (change == "close") {
-				ev.type = WindowEventType::CLOSE;
-			} else if (change == "focus") {
-				ev.type = WindowEventType::FOCUS;
-			} else if (change == "title") {
-				ev.type = WindowEventType::TITLE;
-			} else if (change == "fullscreen_mode") {
-				ev.type = WindowEventType::FULLSCREEN_MODE;
-			} else if (change == "move") {
-				ev.type = WindowEventType::MOVE;
-			} else if (change == "floating") {
-				ev.type = WindowEventType::FLOATING;
-			} else if (change == "urgent") {
-				ev.type = WindowEventType::URGENT;
-			}
-			I3IPC_DEBUG("WINDOW " << change)
-
-			Json::Value  container = root["container"];
-			if (!container.isNull()) {
-				ev.container = parse_container_from_json(container);
-			}
-
-			signal_window_event.emit(ev);
-			break;
-		}
-		case ET_BARCONFIG_UPDATE:
-			I3IPC_DEBUG("BARCONFIG_UPDATE")
-			signal_barconfig_update_event.emit();
-			break;
-		};
-	});
-#undef i3IPC_TYPE_STR
+	signal_event.connect(this, &connection::signal_event_handler);
 }
+void connection::signal_event_handler(EventType  event_type, const std::shared_ptr<const buf_t>&  buf) {
+#define i3IPC_TYPE_STR "i3's event"
+	switch (event_type) {
+	case ET_WORKSPACE: {
+		workspace_event_t  ev;
+		Json::Value  root;
+		IPC_JSON_READ(root);
+		std::string  change = root["change"].asString();
+		if (change == "focus") {
+			ev.type = WorkspaceEventType::FOCUS;
+		} else if (change == "init") {
+			ev.type = WorkspaceEventType::INIT;
+		} else if (change == "empty") {
+			ev.type = WorkspaceEventType::EMPTY;
+		} else if (change == "urgent") {
+			ev.type = WorkspaceEventType::URGENT;
+		} else {
+			I3IPC_WARN("Unknown workspace event type " << change)
+			break;
+		}
+		I3IPC_DEBUG("WORKSPACE " << change)
+
+		Json::Value  current = root["current"];
+		Json::Value  old = root["current"];
+
+		if (!current.isNull()) {
+			ev.current = parse_workspace_from_json(current);
+		}
+		if (!old.isNull()) {
+			ev.old = parse_workspace_from_json(old);
+		}
+
+		signal_workspace_event.emit(ev);
+		break;
+	}
+	case ET_OUTPUT:
+		I3IPC_DEBUG("OUTPUT")
+		signal_output_event.emit();
+		break;
+	case ET_MODE:
+		I3IPC_DEBUG("MODE")
+		signal_mode_event.emit();
+		break;
+	case ET_WINDOW: {
+		window_event_t  ev;
+		Json::Value  root;
+		IPC_JSON_READ(root);
+		std::string  change = root["change"].asString();
+		if (change == "new") {
+			ev.type = WindowEventType::NEW;
+		} else if (change == "close") {
+			ev.type = WindowEventType::CLOSE;
+		} else if (change == "focus") {
+			ev.type = WindowEventType::FOCUS;
+		} else if (change == "title") {
+			ev.type = WindowEventType::TITLE;
+		} else if (change == "fullscreen_mode") {
+			ev.type = WindowEventType::FULLSCREEN_MODE;
+		} else if (change == "move") {
+			ev.type = WindowEventType::MOVE;
+		} else if (change == "floating") {
+			ev.type = WindowEventType::FLOATING;
+		} else if (change == "urgent") {
+			ev.type = WindowEventType::URGENT;
+		}
+		I3IPC_DEBUG("WINDOW " << change)
+
+		Json::Value  container = root["container"];
+		if (!container.isNull()) {
+			ev.container = parse_container_from_json(container);
+		}
+
+		signal_window_event.emit(ev);
+		break;
+	}
+	case ET_BARCONFIG_UPDATE:
+		I3IPC_DEBUG("BARCONFIG_UPDATE")
+		signal_barconfig_update_event.emit();
+		break;
+	};
+#undef i3IPC_TYPE_STR
+};
 connection::~connection() {
 	i3_disconnect(m_main_socket);
 	if (m_event_socket > 0)
@@ -278,7 +279,7 @@ void  connection::handle_event() {
 	if (m_event_socket <= 0) {
 		throw std::runtime_error("event_socket_fd <= 0");
 	}
-	auto  buf = i3_recv(m_event_socket);
+	auto buf = i3_recv(m_event_socket);
 
 	this->signal_event.emit(static_cast<EventType>(1 << (buf->header->type & 0x7f)), std::static_pointer_cast<const buf_t>(buf));
 }
