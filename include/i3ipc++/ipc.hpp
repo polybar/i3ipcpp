@@ -245,8 +245,9 @@ public:
 	/**
 	 * Handle an event from i3
 	 * @note Used only in main()
+	 * @return True if event occurred
 	 */
-	void  handle_event();
+	bool handle_event();
 
 	/**
 	 * Get file descriptor associated with the socket

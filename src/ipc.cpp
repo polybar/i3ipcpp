@@ -275,13 +275,14 @@ void  connection::prepare_to_event_handling() {
 	m_event_socket = i3_connect(m_socket_path);
 	this->subscribe(m_subscriptions);
 }
-void  connection::handle_event() {
+bool connection::handle_event() {
 	if (m_event_socket <= 0) {
 		throw std::runtime_error("event_socket_fd <= 0");
 	}
 	auto buf = i3_recv(m_event_socket);
-
-	this->signal_event.emit(static_cast<EventType>(1 << (buf->header->type & 0x7f)), std::static_pointer_cast<const buf_t>(buf));
+	if (buf)
+		this->signal_event.emit(static_cast<EventType>(1 << (buf->header->type & 0x7f)), std::static_pointer_cast<const buf_t>(buf));
+	return static_cast<bool>(buf);
 }
 
 int connection::get_main_socket_fd() {
