@@ -40,11 +40,6 @@ class ipc_error : public std::runtime_error { using std::runtime_error::runtime_
 class invalid_header_error : public ipc_error { using ipc_error::ipc_error; };
 
 /**
- * @brief Socket return EOF, but expected a data
- */
-class eof_error : public ipc_error { using ipc_error::ipc_error; };
-
-/**
  * @brief If something wrong in a payload of i3's reply
  */
 class invalid_reply_payload_error : public ipc_error { using ipc_error::ipc_error; };
@@ -135,7 +130,7 @@ void   i3_send(const int32_t  sockfd, const buf_t&  buff);
  * @param  sockfd  a socket
  * @return  a buffer of the message
  */
-std::shared_ptr<buf_t>   i3_recv(const int32_t  sockfd) throw (invalid_header_error, eof_error);
+std::shared_ptr<buf_t>   i3_recv(const int32_t  sockfd);
 
 /**
  * @brief Pack a buffer of message
@@ -151,7 +146,7 @@ std::shared_ptr<buf_t>  i3_pack(const ClientMessageType  type, const std::string
  * auto  reply = i3_recv(sockfd);
  * @endcode
  */
-std::shared_ptr<buf_t>  i3_msg(const int32_t  sockfd, const ClientMessageType  type, const std::string&  payload = std::string()) throw (invalid_header_error, eof_error);
+std::shared_ptr<buf_t>  i3_msg(const int32_t  sockfd, const ClientMessageType  type, const std::string&  payload = std::string());
 
 /**
  * @}
