@@ -179,10 +179,14 @@ std::string  get_socketpath() {
 }
 
 
-connection::connection(const std::string&  socket_path) : m_main_socket(i3_connect(socket_path)), m_event_socket(-1), m_subscriptions(0), m_socket_path(socket_path) {
-	signal_event.connect(this, &connection::signal_event_handler);
-}
-void connection::signal_event_handler(EventType  event_type, const std::shared_ptr<const buf_t>&  buf) {
+connection::connection(const std::string& socket_path)
+	: on_event(std::bind(&connection::default_callback, this, std::placeholders::_1, std::placeholders::_2))
+	, m_main_socket(i3_connect(socket_path))
+	, m_event_socket(-1)
+	, m_subscriptions(0)
+	, m_socket_path(socket_path) {}
+
+void connection::default_callback(EventType event_type, const std::shared_ptr<const buf_t>& buf) {
 #define i3IPC_TYPE_STR "i3's event"
 	switch (event_type) {
 	case ET_WORKSPACE: {
@@ -214,16 +218,19 @@ void connection::signal_event_handler(EventType  event_type, const std::shared_p
 			ev.old = parse_workspace_from_json(old);
 		}
 
-		signal_workspace_event.emit(ev);
+		if (on_workspace_event)
+			on_workspace_event(ev);
 		break;
 	}
 	case ET_OUTPUT:
 		I3IPC_DEBUG("OUTPUT")
-		signal_output_event.emit();
+		if (on_output_event)
+			on_output_event();
 		break;
 	case ET_MODE:
 		I3IPC_DEBUG("MODE")
-		signal_mode_event.emit();
+		if (on_mode_event)
+			on_mode_event();
 		break;
 	case ET_WINDOW: {
 		window_event_t  ev;
@@ -254,16 +261,19 @@ void connection::signal_event_handler(EventType  event_type, const std::shared_p
 			ev.container = parse_container_from_json(container);
 		}
 
-		signal_window_event.emit(ev);
+		if (on_window_event)
+			on_window_event(ev);
 		break;
 	}
 	case ET_BARCONFIG_UPDATE:
 		I3IPC_DEBUG("BARCONFIG_UPDATE")
-		signal_barconfig_update_event.emit();
+		if (on_barconfig_update_event)
+			on_barconfig_update_event();
 		break;
 	};
 #undef i3IPC_TYPE_STR
 };
+
 connection::~connection() {
 	i3_disconnect(m_main_socket);
 	if (m_event_socket > 0)
@@ -280,8 +290,8 @@ bool connection::handle_event() {
 		throw std::runtime_error("event_socket_fd <= 0");
 	}
 	auto buf = i3_recv(m_event_socket);
-	if (buf)
-		this->signal_event.emit(static_cast<EventType>(1 << (buf->header->type & 0x7f)), std::static_pointer_cast<const buf_t>(buf));
+	if (buf && on_event)
+		on_event(static_cast<EventType>(1 << (buf->header->type & 0x7f)), std::static_pointer_cast<const buf_t>(buf));
 	return static_cast<bool>(buf);
 }
 

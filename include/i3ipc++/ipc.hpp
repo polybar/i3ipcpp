@@ -6,8 +6,6 @@
 #include <vector>
 #include <list>
 
-#include <fastdelegate/fastdelegate.hpp>
-
 extern "C" {
 #include <i3/ipc.h>
 }
@@ -255,14 +253,23 @@ public:
 	int get_main_socket_fd();
 	int get_event_socket_fd();
 
-	delegate::Signal1<const workspace_event_t&> signal_workspace_event; ///< Workspace event signal
-	delegate::Signal0<> signal_output_event; ///< Output event signal
-	delegate::Signal0<> signal_mode_event; ///< Output mode event signal
-	delegate::Signal1<const window_event_t&>  signal_window_event; ///< Window event signal
-	delegate::Signal0<> signal_barconfig_update_event; ///< Barconfig update event signal
-	delegate::Signal2<EventType, const std::shared_ptr<const buf_t>&>  signal_event; ///< i3 event signal @note Default handler routes event to signal according to type
+	/**
+	 * Event callback handlers
+	 *
+	 * @note: The default `on_event` handler will forward
+	 *        the event to its corresponding sub-handler
+	 *
+	 * @TODO: Add support for multiple handlers
+	 * -----+ Store in std::vector and expose dis-/connect functions
+	 */
+	std::function<void(EventType, const std::shared_ptr<const buf_t>&)> on_event;
+	std::function<void(const workspace_event_t&)> on_workspace_event;
+	std::function<void()> on_output_event;
+	std::function<void()> on_mode_event;
+	std::function<void(const window_event_t&)> on_window_event;
+	std::function<void()> on_barconfig_update_event;
 private:
-	void signal_event_handler(EventType event_type, const std::shared_ptr<const buf_t>& buf);
+	void default_callback(EventType event_type, const std::shared_ptr<const buf_t>& buf);
 
 	const int32_t  m_main_socket;
 	int32_t  m_event_socket;
