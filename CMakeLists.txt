@@ -1,4 +1,4 @@
-# Project setup {{{
+# Project setup
 
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(i3ipc++ CXX)
@@ -6,51 +6,35 @@ project(i3ipc++ CXX)
 option(WITH_TESTS "Build unit tests executables" OFF)
 option(BUILD_EXAMPLES "Build example executables" OFF)
 
-# }}}
-# Process dependencies {{{
-
-find_package(PkgConfig)
-pkg_check_modules(JSONCPP REQUIRED jsoncpp>=1.7.0)
-
-# }}}
-# Create project lib {{{
-
-include_directories(${PROJECT_SOURCE_DIR}/libs)
-
 add_library(${PROJECT_NAME} STATIC
-  include/auss.hpp
-  include/log.hpp
-  include/i3ipc++/ipc.hpp
-  include/i3ipc++/ipc-util.hpp
-  src/ipc.cpp
-  src/ipc-util.cpp)
+  ${PROJECT_SOURCE_DIR}/include/auss.hpp
+  ${PROJECT_SOURCE_DIR}/include/log.hpp
+  ${PROJECT_SOURCE_DIR}/include/i3ipc++/ipc.hpp
+  ${PROJECT_SOURCE_DIR}/include/i3ipc++/ipc-util.hpp
+  ${PROJECT_SOURCE_DIR}/src/ipc.cpp
+  ${PROJECT_SOURCE_DIR}/src/ipc-util.cpp)
 
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
-target_link_libraries(${PROJECT_NAME}
-  ${JSONCPP_LIBRARIES})
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-  ${PROJECT_SOURCE_DIR}/include
-  ${JSONCPP_INCLUDE_DIRS})
-
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wno-unused-parameter -Wno-unused-local-typedefs)
+target_compile_options(${PROJECT_NAME} PRIVATE -std=c++11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-local-typedefs)
 target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:-g3 -DDEBUG>)
 target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:-O3>)
 
-# }}}
-# Export lists to the parent scope if there are any {{{
+# External library: jsoncpp-1.7.7
+add_subdirectory(${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7)
+target_link_libraries(${PROJECT_NAME} PRIVATE jsoncpp_lib_static)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7/include)
 
+# External library: fastdelegate
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/libs/fastdelegate/include)
+
+# Export lists to the parent scope if there are any
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
 if(HAS_PARENT)
   set(I3IPCPP_LIBRARIES ${PROJECT_NAME} PARENT_SCOPE)
-  set(I3IPCPP_INCLUDE_DIRS
-    ${PROJECT_SOURCE_DIR}/include
-    ${JSONCPP_INCLUDE_DIRS})
+  set(I3IPCPP_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
 endif()
 
-# }}}
 # Build examples if the option was given {{{
 
 if(BUILD_EXAMPLES)

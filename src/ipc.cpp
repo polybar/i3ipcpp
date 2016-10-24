@@ -41,12 +41,12 @@ std::vector<std::ostream*>  g_logging_err_outs = {
 
 
 inline rect_t  parse_rect_from_json(const Json::Value&  value) {
-	return {
-		.x = value["x"].asInt(),
-		.y = value["y"].asInt(),
-		.width = value["width"].asInt(),
-		.height = value["height"].asInt(),
-	};
+	rect_t r;
+	r.x = value["x"].asInt();
+	r.y = value["y"].asInt();
+	r.width = value["width"].asInt();
+	r.height = value["height"].asInt();
+	return r;
 }
 
 
@@ -343,13 +343,13 @@ version_t  connection::get_version() const {
 	IPC_JSON_READ(root)
 	IPC_JSON_ASSERT_TYPE_OBJECT(root, "root")
 
-	return {
-		.human_readable = root["human_readable"].asString(),
-		.loaded_config_file_name = root["loaded_config_file_name"].asString(),
-		.major = root["major"].asUInt(),
-		.minor = root["minor"].asUInt(),
-		.patch = root["patch"].asUInt(),
-	};
+	version_t v;
+	v.human_readable = root["human_readable"].asString();
+	v.loaded_config_file_name = root["loaded_config_file_name"].asString();
+	v.major = root["major"].asUInt();
+	v.minor = root["minor"].asUInt();
+	v.patch = root["patch"].asUInt();
+	return v;
 #undef i3IPC_TYPE_STR
 }
 
