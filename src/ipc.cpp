@@ -272,7 +272,7 @@ void connection::default_callback(EventType event_type, const std::shared_ptr<co
 		break;
 	};
 #undef i3IPC_TYPE_STR
-};
+}
 
 connection::~connection() {
 	i3_disconnect(m_main_socket);
