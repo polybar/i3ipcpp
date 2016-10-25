@@ -21,7 +21,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:-g3 -DDEBUG>)
 target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:-O2>)
 
 # External library: jsoncpp-1.7.7
-add_subdirectory(${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7)
+add_subdirectory(${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7 EXCLUDE_FROM_ALL)
 target_link_libraries(${PROJECT_NAME} PRIVATE jsoncpp_lib_static)
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7/include)
 
