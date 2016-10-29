@@ -20,18 +20,31 @@ target_compile_options(${PROJECT_NAME} PRIVATE -std=c++11 -Wall -Wextra -Wno-unu
 target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:-g3 -DDEBUG>)
 target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:-O2>)
 
-# External library: jsoncpp-1.7.7
-add_subdirectory(${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7 EXCLUDE_FROM_ALL)
-target_link_libraries(${PROJECT_NAME} PRIVATE jsoncpp_lib_static)
-target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7/include)
+# External library: jsoncpp-1.7.7 {{{
 
-# Export lists to the parent scope if there are any
+find_package(PkgConfig)
+pkg_check_modules(JSONCPP jsoncpp>=1.7.7)
+
+if(NOT JSONCPP_FOUND)
+  message(STATUS "Could not find jsoncpp>=1.7.7 -- building static lib...")
+  add_subdirectory(${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7 EXCLUDE_FROM_ALL)
+  set(JSONCPP_LIBRARIES jsoncpp_lib_static)
+  set(JSONCPP_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7/include)
+endif()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE ${JSONCPP_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${JSONCPP_INCLUDE_DIRS})
+
+# }}}
+# Export lists to the parent scope if there are any {{{
+
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
 if(HAS_PARENT)
   set(I3IPCPP_LIBRARIES ${PROJECT_NAME} PARENT_SCOPE)
   set(I3IPCPP_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
 endif()
 
+# }}}
 # Build examples if the option was given {{{
 
 if(BUILD_EXAMPLES)
