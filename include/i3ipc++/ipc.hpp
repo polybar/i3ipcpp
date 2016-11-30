@@ -5,8 +5,8 @@
 #include <memory>
 #include <vector>
 #include <map>
-
-#include <sigc++/sigc++.h>
+#include <list>
+#include <functional>
 
 extern "C" {
 #include <i3/ipc.h>
@@ -302,7 +302,7 @@ public:
 
 	/**
 	 * Subscribe on an events of i3
-	 * 
+	 *
 	 * If connection isn't handling events at the moment, event numer will be added to subscription list.
 	 * Else will also send subscripe request to i3
 	 *
@@ -311,7 +311,7 @@ public:
 	 * connection  conn;
 	 * conn.subscribe(i3ipc::ipc::ET_WORKSPACE | i3ipc::ipc::ET_WINDOW);
 	 * @endcode
-	 * 
+	 *
 	 * @param  events event type (EventType enum)
 	 * @return        Is successfully subscribed. If connection isn't handling events at the moment, then always true.
 	 */
@@ -321,7 +321,7 @@ public:
 	 * Handle an event from i3
 	 * @note Used only in main()
 	 */
-	void  handle_event();
+	bool handle_event();
 
 	/**
 	 * Get the fd of the main socket
@@ -347,13 +347,13 @@ public:
 	 */
 	void  disconnect_event_socket();
 
-	sigc::signal<void, const workspace_event_t&>  signal_workspace_event; ///< Workspace event signal
-	sigc::signal<void>  signal_output_event; ///< Output event signal
-	sigc::signal<void, const mode_t&>  signal_mode_event; ///< Output mode event signal
-	sigc::signal<void, const window_event_t&>  signal_window_event; ///< Window event signal
-	sigc::signal<void, const bar_config_t&>  signal_barconfig_update_event; ///< Barconfig update event signal
-	sigc::signal<void, const binding_t&>  signal_binding_event; ///< Binding event signal
-	sigc::signal<void, EventType, const std::shared_ptr<const buf_t>&>  signal_event; ///< i3 event signal @note Default handler routes event to signal according to type
+	std::function<void(const workspace_event_t&)> on_workspace_event; ///< Workspace event signal
+	std::function<void()> on_output_event; ///< Output event signal
+	std::function<void(const mode_t&)> on_mode_event; ///< Output mode event signal
+	std::function<void(const window_event_t&)> on_window_event; ///< Window event signal
+	std::function<void(const bar_config_t&)> on_barconfig_update_event; ///< Barconfig update event signal
+	std::function<void(const binding_t&)> on_binding_event; ///< Binding event signal
+	std::function<void(EventType, const std::shared_ptr<const buf_t>&)> on_event; ///< i3 event signal @note Default handler routes event to signal according to type
 private:
 	const int32_t  m_main_socket;
 	int32_t  m_event_socket;

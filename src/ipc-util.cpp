@@ -13,7 +13,7 @@ extern "C" {
 
 #include <auss.hpp>
 
-#include "ipc-util.hpp"
+#include "i3ipc++/ipc-util.hpp"
 
 namespace i3ipc {
 
@@ -59,7 +59,7 @@ int32_t  i3_connect(const std::string&  socket_path) {
 	}
 
 	(void)fcntl(sockfd, F_SETFD, FD_CLOEXEC); // What for?
-	
+
 	struct sockaddr_un addr;
 	memset(&addr, 0, sizeof(struct sockaddr_un));
 	addr.sun_family = AF_LOCAL;
