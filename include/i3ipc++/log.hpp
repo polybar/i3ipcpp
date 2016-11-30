@@ -40,6 +40,8 @@ inline void  log(const auss_t&  data, const bool  err) {
 
 }
 
+#ifdef WITH_LOGGING
+
 /**
  * Internal macro used in I3IPC_*-logging macros
  */
@@ -78,6 +80,15 @@ inline void  log(const auss_t&  data, const bool  err) {
  * Put debug message to log
  * @param T message
  */
+#define I3IPC_DEBUG(T)
+#endif
+
+#else
+#define I3IPC_LOG(T, ERR)
+#define I3IPC_INFO(T)
+#define I3IPC_ERR(T)
+#define I3IPC_WARN(T)
+#define I3IPC_DEBUG(T)
 #define I3IPC_DEBUG(T)
 #endif
 
