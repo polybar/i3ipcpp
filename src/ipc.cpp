@@ -3,12 +3,12 @@
 #include <stdexcept>
 #include <iostream>
 
-#include <auss.hpp>
 #include <json/json.h>
+#include <auss.hpp>
 
-#include "log.hpp"
-#include "ipc-util.hpp"
-#include "ipc.hpp"
+#include "i3ipc++/ipc-util.hpp"
+#include "i3ipc++/ipc.hpp"
+#include "i3ipc++/log.hpp"
 
 namespace i3ipc {
 
@@ -41,12 +41,12 @@ std::vector<std::ostream*>  g_logging_err_outs = {
 
 
 inline rect_t  parse_rect_from_json(const Json::Value&  value) {
-	return {
-		.x = value["x"].asUInt(),
-		.y = value["y"].asUInt(),
-		.width = value["width"].asUInt(),
-		.height = value["height"].asUInt(),
-	};
+	rect_t r{};
+	r.x = value["x"].asInt();
+	r.y = value["y"].asInt();
+	r.width = value["width"].asInt();
+	r.height = value["height"].asInt();
+	return r;
 }
 
 
@@ -272,7 +272,7 @@ std::string  get_socketpath() {
 
 connection::connection(const std::string&  socket_path) : m_main_socket(i3_connect(socket_path)), m_event_socket(-1), m_subscriptions(0), m_socket_path(socket_path) {
 #define i3IPC_TYPE_STR "i3's event"
-	signal_event.connect([this](EventType  event_type, const std::shared_ptr<const buf_t>&  buf) {
+	on_event = [this](EventType  event_type, const std::shared_ptr<const buf_t>&  buf) {
 		switch (event_type) {
 		case ET_WORKSPACE: {
 			workspace_event_t  ev;
@@ -309,19 +309,25 @@ connection::connection(const std::string&  socket_path) : m_main_socket(i3_conne
 				ev.old = parse_workspace_from_json(old);
 			}
 
-			signal_workspace_event.emit(ev);
+			if (on_workspace_event) {
+				on_workspace_event(ev);
+			}
 			break;
 		}
 		case ET_OUTPUT:
 			I3IPC_DEBUG("OUTPUT")
-			signal_output_event.emit();
+			if (on_output_event) {
+				on_output_event();
+			}
 			break;
 		case ET_MODE: {
 			I3IPC_DEBUG("MODE")
 			Json::Value  root;
 			IPC_JSON_READ(root);
 			std::shared_ptr<mode_t>  mode_data = parse_mode_from_json(root);
-			signal_mode_event.emit(*mode_data);
+			if (on_mode_event) {
+				on_mode_event(*mode_data);
+			}
 			break;
 		}
 		case ET_WINDOW: {
@@ -353,7 +359,9 @@ connection::connection(const std::string&  socket_path) : m_main_socket(i3_conne
 				ev.container = parse_container_from_json(container);
 			}
 
-			signal_window_event.emit(ev);
+			if (on_window_event) {
+				on_window_event(ev);
+			}
 			break;
 		}
 		case ET_BARCONFIG_UPDATE: {
@@ -361,7 +369,9 @@ connection::connection(const std::string&  socket_path) : m_main_socket(i3_conne
 			Json::Value  root;
 			IPC_JSON_READ(root);
 			std::shared_ptr<bar_config_t>  barconf = parse_bar_config_from_json(root);
-			signal_barconfig_update_event.emit(*barconf);
+			if (on_barconfig_update_event) {
+				on_barconfig_update_event(*barconf);
+			}
 			break;
 		}
 		case ET_BINDING: {
@@ -382,12 +392,14 @@ connection::connection(const std::string&  socket_path) : m_main_socket(i3_conne
 				I3IPC_ERR("Failed to parse field \"binding\" from binding_event")
 			} else {
 				I3IPC_DEBUG("BINDING " << bptr->symbol);
-				signal_binding_event.emit(*bptr);
+				if (on_binding_event) {
+					on_binding_event(*bptr);
+				}
 			}
 			break;
 		}
 		};
-	});
+	};
 #undef i3IPC_TYPE_STR
 }
 connection::~connection() {
@@ -420,13 +432,19 @@ void  connection::disconnect_event_socket() {
 }
 
 
-void  connection::handle_event() {
+bool connection::handle_event() {
 	if (m_event_socket <= 0) {
 		this->connect_event_socket();
 	}
-	auto  buf = i3_recv(m_event_socket);
 
-	this->signal_event.emit(static_cast<EventType>(1 << (buf->header->type & 0x7f)), std::static_pointer_cast<const buf_t>(buf));
+	auto buf = i3_recv(m_event_socket);
+
+	if (buf && this->on_event) {
+		this->on_event(static_cast<EventType>(1 << (buf->header->type & 0x7f)), std::static_pointer_cast<const buf_t>(buf));
+	} else if (buf) {
+		return true;
+	}
+	return false;
 }
 
 
@@ -483,13 +501,13 @@ version_t  connection::get_version() const {
 	IPC_JSON_READ(root)
 	IPC_JSON_ASSERT_TYPE_OBJECT(root, "root")
 
-	return {
-		.human_readable = root["human_readable"].asString(),
-		.loaded_config_file_name = root["loaded_config_file_name"].asString(),
-		.major = root["major"].asUInt(),
-		.minor = root["minor"].asUInt(),
-		.patch = root["patch"].asUInt(),
-	};
+	version_t v{};
+	v.human_readable = root["human_readable"].asString();
+	v.loaded_config_file_name = root["loaded_config_file_name"].asString();
+	v.major = root["major"].asUInt();
+	v.minor = root["minor"].asUInt();
+	v.patch = root["patch"].asUInt();
+	return v;
 #undef i3IPC_TYPE_STR
 }
 
@@ -598,14 +616,13 @@ const version_t&  get_version() {
 #define I3IPC_VERSION_MAJOR  0
 #define I3IPC_VERSION_MINOR  4
 #define I3IPC_VERSION_PATCH  0
-	static version_t  version = {
-		.human_readable = auss_t() << I3IPC_VERSION_MAJOR << '.' << I3IPC_VERSION_MINOR << '.' << I3IPC_VERSION_PATCH  << " (built on " << I3IPC_BUILD_DATETIME << ")",
-		.loaded_config_file_name = std::string(),
-		.major = I3IPC_VERSION_MAJOR,
-		.minor = I3IPC_VERSION_MINOR,
-		.patch = I3IPC_VERSION_PATCH,
-	};
-	return version;
+	static version_t v{};
+	v.human_readable = auss_t() << I3IPC_VERSION_MAJOR << '.' << I3IPC_VERSION_MINOR << '.' << I3IPC_VERSION_PATCH;
+	v.loaded_config_file_name = std::string();
+	v.major = I3IPC_VERSION_MAJOR;
+	v.minor = I3IPC_VERSION_MINOR;
+	v.patch = I3IPC_VERSION_PATCH;
+	return v;
 }
 
 }
