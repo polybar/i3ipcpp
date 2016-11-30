@@ -3,6 +3,7 @@
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 project(i3ipc++ CXX)
 
+option(WITH_LOGGING "Build with log support" OFF)
 option(WITH_TESTS "Build unit tests executables" OFF)
 option(BUILD_EXAMPLES "Build example executables" OFF)
 
