@@ -30,11 +30,13 @@ if(NOT JSONCPP_FOUND)
   message(STATUS "Could not find jsoncpp>=1.7.7 -- building static lib...")
   add_subdirectory(${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7 EXCLUDE_FROM_ALL)
   set(JSONCPP_LIBRARIES jsoncpp_lib_static)
-  set(JSONCPP_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7/include)
+  set(JSONCPP_INCLUDEDIR ${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7/include)
+elseif(NOT JSONCPP_LIBRARIES AND JSONCPP_LIBS)
+  set(JSONCPP_LIBRARIES "${JSONCPP_LIBS}")
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${JSONCPP_LIBRARIES})
-target_include_directories(${PROJECT_NAME} PRIVATE ${JSONCPP_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${JSONCPP_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${JSONCPP_INCLUDEDIR})
 
 # }}}
 # Export lists to the parent scope if there are any {{{
@@ -42,7 +44,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${JSONCPP_INCLUDE_DIRS})
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
 if(HAS_PARENT)
   set(I3IPCPP_LIBRARIES ${PROJECT_NAME} PARENT_SCOPE)
-  set(I3IPCPP_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include)
+  set(I3IPCPP_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${JSONCPP_INCLUDEDIR})
 endif()
 
 # }}}
