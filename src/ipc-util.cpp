@@ -116,7 +116,7 @@ void   i3_send(const int32_t  sockfd, const buf_t&  buff) {
 }
 
 std::shared_ptr<buf_t>   i3_recv(const int32_t  sockfd) throw (invalid_header_error, eof_error) {
-	buf_t*  buff = new buf_t(0);
+	auto buff = std::make_shared<buf_t>(0);
 	const uint32_t  header_size = sizeof(header_t);
 
 	{
@@ -155,7 +155,7 @@ std::shared_ptr<buf_t>   i3_recv(const int32_t  sockfd) throw (invalid_header_er
 		}
 	}
 
-	return std::shared_ptr<buf_t>(buff);
+	return buff;
 }
 
 
