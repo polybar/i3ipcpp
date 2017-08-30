@@ -17,7 +17,7 @@ add_library(${PROJECT_NAME} STATIC
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/3rd/auss/include)
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
-target_compile_options(${PROJECT_NAME} PRIVATE -std=c++11 -Wall -Wextra -Wno-unused-parameter)
+target_compile_options(${PROJECT_NAME} PRIVATE -std=c++11 -Wall -Wextra -Wno-unused-parameter -Wno-deprecated-declarations)
 target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:-g3 -DDEBUG>)
 target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:-O2>)
 
