@@ -42,10 +42,10 @@ std::vector<std::ostream*>  g_logging_err_outs = {
 
 inline rect_t  parse_rect_from_json(const Json::Value&  value) {
 	rect_t r{};
-	r.x = value["x"].asInt();
-	r.y = value["y"].asInt();
-	r.width = value["width"].asInt();
-	r.height = value["height"].asInt();
+	r.x = value["x"].asUInt();
+	r.y = value["y"].asUInt();
+	r.width = value["width"].asUInt();
+	r.height = value["height"].asUInt();
 	return r;
 }
 
@@ -287,6 +287,12 @@ connection::connection(const std::string&  socket_path) : m_main_socket(i3_conne
 				ev.type = WorkspaceEventType::EMPTY;
 			} else if (change == "urgent") {
 				ev.type = WorkspaceEventType::URGENT;
+			} else if (change == "rename") {
+				ev.type = WorkspaceEventType::RENAME;
+			} else if (change == "reload") {
+				ev.type = WorkspaceEventType::RELOAD;
+			} else if (change == "restored") {
+				ev.type = WorkspaceEventType::RESTORED;
 			} else {
 				I3IPC_WARN("Unknown workspace event type " << change)
 				break;
@@ -294,7 +300,7 @@ connection::connection(const std::string&  socket_path) : m_main_socket(i3_conne
 			I3IPC_DEBUG("WORKSPACE " << change)
 
 			Json::Value  current = root["current"];
-			Json::Value  old = root["current"];
+			Json::Value  old = root["old"];
 
 			if (!current.isNull()) {
 				ev.current = parse_workspace_from_json(current);
