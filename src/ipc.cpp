@@ -28,6 +28,7 @@ std::vector<std::ostream*>  g_logging_err_outs = {
 	if(!reader->parse(buf->payload, buf->payload + buf->header->size, &ROOT, &error)) { \
 		throw invalid_reply_payload_error(auss_t() << "Failed to parse reply on \"" i3IPC_TYPE_STR "\": " << error); \
 	} \
+	delete reader; \
 }
 
 #define IPC_JSON_ASSERT_TYPE(OBJ, OBJ_DESCR, TYPE_CHECK, TYPE_NAME) \
