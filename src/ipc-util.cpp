@@ -34,7 +34,7 @@ buf_t::buf_t(uint32_t  payload_size) : size(sizeof(header_t) + payload_size) {
 	data = new uint8_t[size];
 	header = (header_t*)data;
 	payload = (char*)(data + sizeof(header_t));
-	strncpy(header->magic, g_i3_ipc_magic.c_str(), sizeof(header->magic));
+	memcpy(header->magic, g_i3_ipc_magic.c_str(), sizeof(header->magic));
 	header->size = payload_size;
 	header->type = 0x0;
 }
