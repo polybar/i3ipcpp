@@ -24,16 +24,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:-O2>)
 # External library: jsoncpp-1.7.7 {{{
 
 find_package(PkgConfig)
-pkg_check_modules(JSONCPP jsoncpp>=1.7.7)
-
-if(NOT JSONCPP_FOUND)
-  message(STATUS "Could not find jsoncpp>=1.7.7 -- building static lib...")
-  add_subdirectory(${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7 EXCLUDE_FROM_ALL)
-  set(JSONCPP_LIBRARIES jsoncpp_lib_static)
-  set(JSONCPP_INCLUDEDIR ${PROJECT_SOURCE_DIR}/libs/jsoncpp-1.7.7/include)
-elseif(NOT JSONCPP_LIBRARIES AND JSONCPP_LIBS)
-  set(JSONCPP_LIBRARIES "${JSONCPP_LIBS}")
-endif()
+pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${JSONCPP_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${JSONCPP_INCLUDEDIR})
