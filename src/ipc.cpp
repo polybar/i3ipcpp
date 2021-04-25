@@ -265,7 +265,7 @@ std::string  get_socketpath() {
 		pclose(in);
 		str = str_buf;
 	}
-	if (str.back() == '\n') {
+	if (!str.empty() && str.back() == '\n') {
 		str.pop_back();
 	}
 	return str;
